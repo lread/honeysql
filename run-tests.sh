@@ -1,8 +1,10 @@
 #!/bin/sh
 
-echo ==== Test README.md ==== && clojure -A:readme && \
-  echo ==== Lint Source ==== && clojure -A:eastwood && \
-  echo ==== Test ClojureScript ==== && clojure -A:test:cljs-runner
+echo "==== Gen Tests for README.md ====" && clojure -X:test-doc-blocks/gen && \
+  echo "==== Run README.md Tests Clojure ====" && clojure -M:test-doc-blocks/run:runner -d target/test-doc-blocks/test && \
+  echo "==== Run README.md Tests ClojureScript ====" && clojure -M:test-doc-blocks/run:cljs-runner -d target/test-doc-blocks/test && \
+  echo "==== Lint Source ====" && clojure -A:eastwood && \
+  echo "==== Test ClojureScript ====" && clojure -A:test:cljs-runner
 
 if test $? -eq 0
 then

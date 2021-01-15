@@ -12,8 +12,8 @@ This project follows the version scheme MAJOR.MINOR.COMMITS where MAJOR and MINO
 
 ## Note on code samples
 
-All sample code in this README is automatically run as a unit test using
-[seancorfield/readme](https://github.com/seancorfield/readme).
+All sample code in this README is automatically run as unit tests using
+[lread/test-doc-blocks](https://github.com/lread/test-doc-blocks).
 
 Note that while some of these samples show pretty-printed SQL, this is just for
 README readability; honeysql does not generate pretty-printed SQL.
@@ -22,9 +22,27 @@ whitespace.
 
 ## Usage
 
+From Clojure:
+<!-- {:test-doc-blocks/reader-cond :clj} -->
 ```clojure
 (require '[honeysql.core :as sql]
          '[honeysql.helpers :refer :all :as helpers])
+```
+
+From ClojureScript we need to be more explicit. 
+It does not support `:refer :all` and needs to be told to bring in macros:
+
+<!-- {:test-doc-blocks/reader-cond :cljs} -->
+```clojure
+(require '[honeysql.core :as sql]
+         '[honeysql.helpers :refer [select modifiers from 
+                                    join left-join right-join 
+                                    where group having
+                                    order-by limit offset values columns
+                                    insert-into merge-where merge-select 
+                                    composite sset 
+                                    delete delete-from truncate lock] 
+                            :refer-macros [defhelper] :as helpers])
 ```
 
 Everything is built on top of maps representing SQL queries:
@@ -62,6 +80,7 @@ Honeysql is a relatively "pure" library, it does not manage your sql connection
 or run queries for you, it simply generates SQL strings. You can then pass them
 to jdbc:
 
+<!-- :test-doc-blocks/skip -->
 ```clj
 (jdbc/query conn (sql/format sqlmap))
 ```
@@ -119,7 +138,7 @@ When using the vanilla helper functions, new clauses will replace old clauses:
 
 ```clojure
 (-> sqlmap (select :*))
-=> '{:from [:foo], :where [:= :f.a "baz"], :select (:*)}
+=> {:from [:foo], :where [:= :f.a "baz"], :select (:*)}
 ```
 
 To add to clauses instead of replacing them, use `merge-select`, `merge-where`, etc.:
@@ -350,9 +369,9 @@ qualifiers, raw SQL fragments, inline values, and named input parameters:
 ```
 ```clojure
 call-qualify-map
-=> '{:where [:and [:= :a #sql/param :baz] [:= :b #sql/inline 42]]
-     :from (:foo)
-     :select (#sql/call [:foo :bar] :foo.a #sql/raw "@var := foo.bar")}
+=> {:where [:and [:= :a #sql/param :baz] [:= :b #sql/inline 42]]
+    :from (:foo)
+    :select (#sql/call [:foo :bar] :foo.a #sql/raw "@var := foo.bar")}
 ```
 ```clojure
 (sql/format call-qualify-map :params {:baz "BAZ"})
@@ -470,16 +489,16 @@ Here's a big, complicated query. Note that Honey SQL makes no attempt to verify 
 ```clojure
 big-complicated-map
 => {:select [:f.* :b.baz :c.quux [:b.bla "bla-bla"]
-             (sql/call :now) (sql/raw "@x := 10")]
+             #sql/call [:now] #sql/raw "@x := 10"]
     :modifiers [:distinct]
     :from [[:foo :f] [:baz :b]]
     :join [:draq [:= :f.b :draq.x]]
     :left-join [[:clod :c] [:= :f.a :c.d]]
     :right-join [:bock [:= :bock.z :c.e]]
     :where [:or
-             [:and [:= :f.a "bort"] [:not= :b.baz (sql/param :param1)]]
+             [:and [:= :f.a "bort"] [:not= :b.baz #sql/param :param1]]
              [:< 1 2 3]
-             [:in :f.e [1 (sql/param :param2) 3]]
+             [:in :f.e [1 #sql/param :param2 3]]
              [:between :f.e 10 20]]
     :group-by [:f.a :c.e]
     :having [:< 0 :f.e]
@@ -506,8 +525,9 @@ big-complicated-map
      OFFSET ? "
      "bort" "gabba" 1 2 2 3 1 2 3 10 20 0 50 10]
 ```
+<!-- #:test-doc-blocks{:reader-cond :clj} -->
 ```clojure
-;; Printable and readable
+;; Printable and readable from Clojure
 (= big-complicated-map (read-string (pr-str big-complicated-map)))
 => true
 ```
@@ -567,6 +587,7 @@ If you want to use your own datatype as a parameter then the idiomatic approach 
 or `clojure.java.jdbc`'s [`ISQLValue`](https://clojure.github.io/java.jdbc/#clojure.java.jdbc/ISQLValue) protocol isn't enough as `honeysql` won't correct pass through your datatype, rather it will interpret it incorrectly.
 
 To teach `honeysql` how to handle your datatype you need to implement [`honeysql.format/ToSql`](https://github.com/seancorfield/honeysql/blob/a9dffec632be62c961be7d9e695d0b2b85732c53/src/honeysql/format.cljc#L94). For example:
+<!-- :test-doc-blocks/skip -->
 ``` clojure
 ;; given:
 (defrecord MyDateWrapper [...]

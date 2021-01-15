@@ -12,12 +12,16 @@
   {:extra-deps {com.cognitect/test-runner
                 {:git/url "https://github.com/cognitect-labs/test-runner"
                  :sha "f7ef16dc3b8332b0d77bc0274578ad5270fbfedd"}}
-   :main-opts ["-m" "cognitect.test-runner"
-               "-d" "test"]}
+   :main-opts ["-m" "cognitect.test-runner"]}
   :cljs-runner {:extra-deps {olical/cljs-test-runner {:mvn/version "3.7.0"}}
                 :main-opts ["-m" "cljs-test-runner.main"]}
   :readme {:extra-deps {seancorfield/readme {:mvn/version "1.0.13"}}
            :main-opts ["-m" "seancorfield.readme"]}
+  :test-doc-blocks/gen {:replace-deps {lread/test-doc-blocks 
+                                       {:git/url "https://github.com/lread/test-doc-blocks.git"
+                                        :sha "0e7f19b8685cad7dc4a5e071ed2c4f1ff41fa952"}}
+                        :exec-fn lread.test-doc-blocks/gen-tests}
+  :test-doc-blocks/run {:extra-paths ["target/test-doc-blocks/test"]}
   :eastwood {:extra-deps {jonase/eastwood {:mvn/version "RELEASE"}}
              :main-opts ["-m" "eastwood.lint" "{:source-paths,[\"src\"]}"]}
   :jar {:extra-deps {seancorfield/depstar {:mvn/version "1.1.117"}}
